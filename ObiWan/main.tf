@@ -28,4 +28,5 @@ resource "azurerm_subnet" "confusing" {
       actions = ["Microsoft.Network/virtualNetworks/subnets/join/action", "Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action"]
     }
 }
+
 }
