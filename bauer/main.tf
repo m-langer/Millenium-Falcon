@@ -6,6 +6,7 @@ resource "azurerm_resource_group" "rg_bauer" {
   tags = {
     owner = "andreas.bauer@redbull.com"
       }
+
 }
 
 # Create a virtual network within the resource group
@@ -28,6 +29,7 @@ tags = {
   resource_group_name  = azurerm_resource_group.rg_bauer.name
   virtual_network_name = azurerm_virtual_network.vnet-bauer.name
   address_prefixes     = ["10.10.10.0/25"]
+
 
 
 }
