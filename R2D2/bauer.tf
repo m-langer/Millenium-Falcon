@@ -32,40 +32,26 @@ tags = {
   address_prefixes     = ["10.10.10.0/25"]
 
 
-
 }
 
-resource "azurerm_network_interface" "nic-bauer" {
-  name                = "nic-bauer"
-  location            = azurerm_resource_group.rg_bauer.location
-  resource_group_name = azurerm_resource_group.rg_bauer.name
-
-  ip_configuration {
-    name                          = "internal"
-    subnet_id                     = azurerm_subnet.sn-bauer.id
-    private_ip_address_allocation = "Dynamic"
-  }
-}
-
-resource "azurerm_linux_virtual_machine" "vm-bauer-2" {
-  name                = "vm-bauer-2"
-  resource_group_name = azurerm_resource_group.rg_bauer.name
-  location            = azurerm_resource_group.rg_bauer.location
-  size                = "Standard_F2"
+module "xxxxx" {
+  source = "./modules/vm/"
+  nic_name                      = "vm-nic-bauer"
+  location = azurerm_resource_group.rg_bauer.location
+  resource_group_name           = azurerm_resource_group.rg_bauer.name
+  subnet_id                   = azurerm_subnet.sn-bauer.id
+  # when using vnet module:
+  // subnet_id                     = module.belka-vnet.subnet_id
+  vm_name                       = "vm-bauer"
+  vm_size                       = "Standard_DS1_v2"
+  os_disk_name                  = "example-os-disk"
+  image_publisher               = "Canonical"
+  image_offer                   = "UbuntuServer"
+  image_sku                     = "18.04-LTS"
+  image_version                 = "latest"
+  computer_name                 = "hostname"
+  admin_username                = "bauer"
+  admin_password                = "Password1234!"
   disable_password_authentication = false
-  admin_username      = "bauer"
-  admin_password = "BauerBauer1234"
-  network_interface_ids = [azurerm_network_interface.nic-bauer.id,  ]
-
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
-  }
-
-  source_image_reference {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts"
-    version   = "latest"
-  }
 }
+
