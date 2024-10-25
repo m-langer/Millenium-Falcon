@@ -42,27 +42,34 @@ resource "azurerm_network_interface" "confusing" {
   }
 }
 
-resource "azurerm_linux_virtual_machine" "confusing" {
-  name                = "confusing-machine"
-  resource_group_name = azurerm_resource_group.confusing.name
-  location            = azurerm_resource_group.confusing.location
-  size                = "Standard_F2"
-  admin_username      = "adminuser"
+ module "obiwan-vm" {
+  source                        = "./modules/vm"
+  nic_name                      = "vm-nic"
+  location                      = azurerm_resource_group.obiwan-rg.location
+  resource_group_name           = azurerm_resource_group.obiwan-rg.name
+  subnet_id                   = azurerm_subnet.obiwan-subnet.id
+  # when using vnet module:
+  // subnet_id                     = module.obiwan-vnet.subnet_id
+  vm_name                       = "vm"
+  vm_size                       = "Standard_DS1_v2"
+  os_disk_name                  = "example-os-disk"
+  image_publisher               = "Canonical"
+  image_offer                   = "UbuntuServer"
+  image_sku                     = "18.04-LTS"
+  image_version                 = "latest"
+  computer_name                 = "hostname"
+  admin_username                = "adminuser"
+  admin_password                = "Password1234!"
   disable_password_authentication = false
-  admin_password = "ThisisLondon56"
-  network_interface_ids = [
-    azurerm_network_interface.confusing.id,
-  ]
-
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
-  }
-
-  source_image_reference {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts"
-    version   = "latest"
-  }
 }
+
+module "obiwan-vnet" {
+  source              = "./modules/vnet"
+  vnet_name           = "obiwan-vnet"
+  address_space       = ["11.0.0.0/16"]
+  location            = azurerm_resource_group.obiwan-rg.location
+  resource_group_name = azurerm_resource_group.obiwan-rg.name
+  subnet_name         = "obiwan-subnet"
+  subnet_prefixes     = ["11.0.1.0/24"]
+}
+  
