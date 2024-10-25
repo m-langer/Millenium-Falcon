@@ -1,4 +1,4 @@
-resource "azurerm_resource_group" "m-langer" {
+resource "azurerm_resource_group" "m-langer-rg" {
   name     = "m-langer"
   location = "canadaeast"
   tags = {
@@ -7,59 +7,40 @@ resource "azurerm_resource_group" "m-langer" {
 }
 
 # creat a virtual network
-resource "azurerm_virtual_network" "m-langer" {
+resource "azurerm_virtual_network" "m-langer-vnet" {
   name                = "m-langer-vnet"
-  resource_group_name = azurerm_resource_group.m-langer.name
-  location            = azurerm_resource_group.m-langer.location
+  resource_group_name = azurerm_resource_group.m-langer-rg.name
+  location            = azurerm_resource_group.m-langer-rg.location
   address_space       = ["10.0.0.0/16"]
   tags = {
     owner = "moritz.langer@redbull.com"
   }
 }
 # create a subnet
-resource "azurerm_subnet" "m-langer" {
+resource "azurerm_subnet" "m-langer-subnet" {
   name                 = "m-langer-subnet"
-  resource_group_name  = azurerm_resource_group.m-langer.name
-  virtual_network_name = azurerm_virtual_network.m-langer.name
+  resource_group_name  = azurerm_resource_group.m-langer-rg.name
+  virtual_network_name = azurerm_virtual_network.m-langer-vnet.name
   address_prefixes     = ["10.0.1.0/24"]
 }
 
-# add a network interface
-resource "azurerm_network_interface" "m-langer" {
-  name                = "m-langer-nic"
-  resource_group_name = azurerm_resource_group.m-langer.name
-  location            = azurerm_resource_group.m-langer.location
-
-  ip_configuration {
-    name                          = "m-langer-ipconfig"
-    subnet_id                     = azurerm_subnet.m-langer.id
-    private_ip_address_allocation = "Dynamic"
-  }
-}
-
-# add a virtual machine
-resource "azurerm_linux_virtual_machine" "m-langer" {
-  name                = "m-langer-vm"
-  resource_group_name = azurerm_resource_group.m-langer.name
-  location            = azurerm_resource_group.m-langer.location
-  size                = "Standard_F2"
-  admin_username      = "moritz"
-  network_interface_ids = [azurerm_network_interface.m-langer.id]
+module "m-langer-vm" {
+  source = "./modules/vm"
+  nic_name                      = "vm-nic"
+  location                      = azurerm_resource_group.m-langer-rg.location
+  resource_group_name           = azurerm_resource_group.m-langer-rg.name
+  subnet_id                     = azurerm_subnet.m-langer-subnet.id
+  # when using vnet module:
+  // subnet_id                     = module.belka-vnet.subnet_id
+  vm_name                       = "vm"
+  vm_size                       = "Standard_F2"
+  os_disk_name                  = "example-os-disk"
+  image_publisher               = "Canonical"
+  image_offer                   = "UbuntuServer"
+  image_sku                     = "18.04-LTS"
+  image_version                 = "latest"
+  computer_name                 = "hostname"
+  admin_username                = "adminuser"
+  admin_password                = "PW123PE456!?"
   disable_password_authentication = false
-  admin_password = "L0y05^nHZ6*"
-
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
-  }
-  # windows iso
-  source_image_reference {
-    publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "18.04-LTS"
-    version   = "latest"
-  # os disk
-}
-tags = azurerm_network_interface.m-langer.tags
-# add a public ip
 }
