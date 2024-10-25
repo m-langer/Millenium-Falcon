@@ -63,13 +63,4 @@ resource "azurerm_network_interface" "confusing" {
   disable_password_authentication = false
 }
 
-module "obiwan-vnet" {
-  source              = "./modules/vnet"
-  vnet_name           = "obiwan-vnet"
-  address_space       = ["11.0.0.0/16"]
-  location            = azurerm_resource_group.obiwan-rg.location
-  resource_group_name = azurerm_resource_group.obiwan-rg.name
-  subnet_name         = "obiwan-subnet"
-  subnet_prefixes     = ["11.0.1.0/24"]
-}
   
