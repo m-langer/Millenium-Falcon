@@ -28,26 +28,14 @@ resource "azurerm_subnet" "confusing" {
       actions = ["Microsoft.Network/virtualNetworks/subnets/join/action", "Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action"]
     }
 }
-
-}
-resource "azurerm_network_interface" "confusing" {
-  name                = "confusing-nic"
-  location            = azurerm_resource_group.confusing.location
-  resource_group_name = azurerm_resource_group.confusing.name
-
-  ip_configuration {
-    name                          = "internal"
-    subnet_id                     = azurerm_subnet.confusing.id
-    private_ip_address_allocation = "Dynamic"
-  }
 }
 
- module "obiwan-vm" {
+module "obiwan-vm" {
   source                        = "./modules/vm"
   nic_name                      = "vm-nic"
-  location                      = azurerm_resource_group.obiwan-rg.location
-  resource_group_name           = azurerm_resource_group.obiwan-rg.name
-  subnet_id                   = azurerm_subnet.obiwan-subnet.id
+  location                      = azurerm_resource_group.confusing.location
+  resource_group_name           = azurerm_resource_group.confusing.name
+  subnet_id                   = azurerm_subnet.confusing.id
   # when using vnet module:
   // subnet_id                     = module.obiwan-vnet.subnet_id
   vm_name                       = "vm"
